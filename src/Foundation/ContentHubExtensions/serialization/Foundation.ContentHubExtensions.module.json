@@ -1,0 +1,17 @@
+{
+	"namespace": "Foundation.ContentHubExtensions",
+	"references": [],
+	"items" : {
+		"includes": [
+			{
+				"name": "templates",
+				"path": "/sitecore/templates/Foundation/ContentHubExtensions"
+			},
+			{
+				"name": "id providers root",
+				"path": "/sitecore/system/Modules/CMP/Settings/Id Providers",
+				"scope": "SingleItem"
+			}
+		]
+	}
+}
