@@ -49,7 +49,6 @@
     <Compile Include="Constants.cs" />
     <Compile Include="DependencyInjection\ServicesConfigurator.cs" />
     <Compile Include="Helpers\CustomCmpHelper.cs" />
-    <Compile Include="Pipelines\cmp.importEntity\PostSaveEntity.cs" />
     <Compile Include="Pipelines\cmp.importEntity\EnsureItem.cs" />
     <Compile Include="Pipelines\cmp.importEntity\EnsureRelation.cs" />
     <Compile Include="Pipelines\cmp.importEntity\SearchDatabase.cs" />

@@ -192,20 +192,7 @@ namespace Foundation.ContentHubExtensions.Pipelines.cmp.importEntity
 
         private string GetRelatedEntityReverseRelationshipFieldName(string relatedEntityFieldName, string cmpRelationName, Item entityMappingConfigItem)
         {
-            if (!cmpRelationName.EndsWith(Constants.ParentSuffix) && !cmpRelationName.EndsWith(Constants.ChildSuffix))
-            {
-                return relatedEntityFieldName;
-            }
-
             string counterPartCmpRelationName = relatedEntityFieldName;
-            if (cmpRelationName.EndsWith(Constants.ParentSuffix))
-            {
-                counterPartCmpRelationName = cmpRelationName.Replace(Constants.ParentSuffix, Constants.ChildSuffix);
-            }
-            else if (cmpRelationName.EndsWith(Constants.ChildSuffix))
-            {
-                counterPartCmpRelationName = cmpRelationName.Replace(Constants.ChildSuffix, Constants.ParentSuffix);
-            }
 
             foreach (BaseItem counterPartBaseItem in
                      entityMappingConfigItem.Children.Where<Item>(

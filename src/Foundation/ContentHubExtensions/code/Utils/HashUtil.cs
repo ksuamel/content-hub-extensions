@@ -24,7 +24,7 @@ namespace Foundation.ContentHubExtensions.Utils
             return GetMd5Hash(input).Take(16).ToArray();
         }
 
-        public static IEnumerable<byte> GetMd5Hash(string input)
+        private static IEnumerable<byte> GetMd5Hash(string input)
         {
             using (var md5Hash = MD5.Create())
             {
