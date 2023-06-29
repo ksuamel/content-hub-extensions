@@ -14,7 +14,7 @@ This module uses Sitecore Content Serialization module included in the Sitecore 
 
 ```
 dotnet tool restore
-dotnet sitecore login -identity <https://id.hostname.com> -authoring <https://cm.hostname.com> --alow-write=true
+dotnet sitecore login --authority <https://id.hostname.com> --cm <https://cm.hostname.com> --alow-write true
 dotnet sitecore ser push
 ```
 
