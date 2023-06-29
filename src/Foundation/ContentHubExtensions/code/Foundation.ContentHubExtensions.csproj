@@ -56,6 +56,7 @@
     <Compile Include="Services\IItemIdService.cs" />
     <Compile Include="Services\ItemIdService.cs" />
     <Compile Include="Utils\HashUtil.cs" />
+    <Compile Include="Utils\ItemUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Foundation.ContentHubExtensions.wpp.targets" />

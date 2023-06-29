@@ -4,13 +4,14 @@ using Stylelabs.M.Sdk.Contracts.Base;
 using System;
 using System.Linq;
 using Foundation.ContentHubExtensions.Utils;
+using ItemUtil = Foundation.ContentHubExtensions.Utils.ItemUtil;
 
 namespace Foundation.ContentHubExtensions.Services
 {
     public class ItemIdService : IItemIdService
     {
-        public static Item CmpConfigItem = null; //Parent of all CMP Entity Mappings
-        public static Item CmpIdProvidersItem = null; //Parent of all CMP Entity Id Providers
+        public static Item CmpConfigItem = ItemUtil.GetConfigItem();
+        public static Item CmpIdProvidersItem = ItemUtil.GetIdProviderItem();
 
         public ID GenerateId(IEntity entity)
         {
