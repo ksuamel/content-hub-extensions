@@ -7,7 +7,12 @@ Features:
 
 
 # How to use
-Installing and configuring the module is straight forward. First, ensure you have the default CMP connector working on your Sitecore solution. Then, deserialize the Sitecore items in this solution into your Sitecore instance. Finally, configure the new features.
+Installing and configuring the module is straight forward. 
+
+1. Ensure you the the default CMP connector installed and working on your Sitecore solution
+2. Deserialize the included Sitecore items
+3. Deploy DLLs and configuration files
+4. Configure new features
 
 ## Deserializing the included Sitecore items
 This module uses Sitecore Content Serialization module included in the Sitecore CLI. If you want to directly install these new templates into your instance, run the following commands at the root of the repo:
@@ -18,8 +23,14 @@ dotnet sitecore login --authority <https://id.hostname.com> --cm <https://cm.hos
 dotnet sitecore ser push
 ```
 
+## Deploy DLLs and configuration files
+
+To generate the DLLs required for this module, just build the solution. Inside of your bin, you will find the "Foundation.ContentHubExtensions.dll" file. Place this file inside of your Sitecore site's bin folder.
+
+For the configuration path file, that can be found at /src/Foundation/ContentHubExtensions/App_Data/Include/Foundation/Foundation.ContentHubExtensions.config, place this file inside of your Sitecore site's Include folder. 
 
 ## Configuring features
+
 Some features are required for the module to work, and other are optional.
 
 Required:
