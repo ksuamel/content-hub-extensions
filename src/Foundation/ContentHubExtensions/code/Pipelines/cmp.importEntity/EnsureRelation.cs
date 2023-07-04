@@ -84,6 +84,10 @@ namespace Foundation.ContentHubExtensions.Pipelines.cmp.importEntity
             {
                 var fieldName1 = relatedEntityMappingItem[Sitecore.Connector.CMP.Constants.FieldMappingSitecoreFieldNameFieldId];
                 var cmpRelationName = relatedEntityMappingItem[Sitecore.Connector.CMP.Constants.RelationFieldMappingCmpRelationFieldNameFieldId];
+                var relationshipTypeValue = relatedEntityMappingItem[Constants.Fields.RelationshipTypeField];
+                var relationshipType = string.IsNullOrEmpty(relationshipTypeValue)
+                    ? ID.Null
+                    : new ID(relationshipTypeValue);
                 if (!string.IsNullOrEmpty(fieldName1))
                 {
                     if (!string.IsNullOrEmpty(cmpRelationName))
@@ -92,11 +96,11 @@ namespace Foundation.ContentHubExtensions.Pipelines.cmp.importEntity
                         {
                             var database = _factory.GetDatabase(_settings.DatabaseName);
                             Assert.IsNotNull(database, "Could not get the master database.");
-                            var relationEntities = _cmpHelper.GetRelationEntities(args, cmpRelationName);
+                            var relatedEntities = _cmpHelper.GetRelationEntities(args, cmpRelationName, relationshipType);
                             var cmpRootConfigItem = database.GetItem(Sitecore.Connector.CMP.Constants.ConfigItemId, args.Language);
                             Assert.IsNotNull(cmpRootConfigItem, "Could not get the CMP Config item.");
                             var source = new List<string>();
-                            foreach (var relatedEntityModel in relationEntities)
+                            foreach (var relatedEntityModel in relatedEntities)
                             {
                                 if (string.Equals(relatedEntityModel.EntityDefinition, "M.Asset", StringComparison.Ordinal) || string.Equals(relatedEntityModel.EntityDefinition, "M.AssetMedia", StringComparison.Ordinal))
                                 {
@@ -113,17 +117,17 @@ namespace Foundation.ContentHubExtensions.Pipelines.cmp.importEntity
                                     }
                                     break;
                                 }
-                                foreach (var entityMappingConfigItem in cmpRootConfigItem.Children.Where(x => x.TemplateID == Sitecore.Connector.CMP.Constants.EntityMappingTemplateId))
+                                foreach (var relatedEntityMappingConfigItem in cmpRootConfigItem.Children.Where(x => x.TemplateID == Sitecore.Connector.CMP.Constants.EntityMappingTemplateId))
                                 {
                                     if (!string.Equals(relatedEntityModel.EntityDefinition,
-                                            entityMappingConfigItem[
+                                            relatedEntityMappingConfigItem[
                                                 Sitecore.Connector.CMP.Constants.EntityMappingEntityTypeSchemaFieldId],
                                             StringComparison.Ordinal))
                                     {
                                         continue;
                                     }
 
-                                    Assert.IsTrue(ID.TryParse(entityMappingConfigItem[Sitecore.Connector.CMP.Constants.EntityMappingBucketFieldId], out var result), "The entity mapping bucket Id is empty or invalid. Check this field value in the configuration item.");
+                                    Assert.IsTrue(ID.TryParse(relatedEntityMappingConfigItem[Sitecore.Connector.CMP.Constants.EntityMappingBucketFieldId], out var result), "The entity mapping bucket Id is empty or invalid. Check this field value in the configuration item.");
                                     var itemBucket = database.GetItem(result, args.Language);
                                     Assert.IsNotNull(itemBucket, $"Could not get the Relation Bucket item id {result}.");
 
@@ -143,27 +147,46 @@ namespace Foundation.ContentHubExtensions.Pipelines.cmp.importEntity
                                         
                                     source.Add(relatedItemId?.ToString());
 
-                                    foreach (var baseItem in entityMappingConfigItem.Children.Where(x => x.TemplateID == Sitecore.Connector.CMP.Constants.RelatedEntityMappingTemplateId && string.Equals(x[Sitecore.Connector.CMP.Constants.RelationFieldMappingCmpRelationFieldNameFieldId], cmpRelationName, StringComparison.Ordinal)))
+                                    foreach (var relatedEntityFieldMapping in relatedEntityMappingConfigItem.Children.Where(x => x.TemplateID == Sitecore.Connector.CMP.Constants.RelatedEntityMappingTemplateId
+                                                 && string.Equals(x[Sitecore.Connector.CMP.Constants.RelationFieldMappingCmpRelationFieldNameFieldId], cmpRelationName, StringComparison.Ordinal)))
                                     {
-                                        var fieldName2 = baseItem[Sitecore.Connector.CMP.Constants.FieldMappingSitecoreFieldNameFieldId];
-                                        var str = relatedEntityItem[fieldName2];
-                                        var flag2 = false;
+                                        var relatedEntityRelationshipTypeValue =
+                                            relatedEntityFieldMapping[Constants.Fields.RelationshipTypeField];
+                                        var relatedEntityRelationshipType = string.IsNullOrEmpty(relatedEntityRelationshipTypeValue)
+                                            ? ID.Null
+                                            : new ID(relatedEntityRelationshipTypeValue);
+                                        if ((ID.IsNullOrEmpty(relatedEntityRelationshipType) || relatedEntityRelationshipType == Constants.RelationshipType.Default) 
+                                            && (relationshipType == Constants.RelationshipType.Parent || relationshipType == Constants.RelationshipType.Child) )
+                                        {
+                                            //skip, both relationships types must be configured if at least one of them is
+                                            Logger.Error(BaseHelper.GetLogMessageText(_settings.LogMessageTitle,
+                                                    $"An error occured during mapping related entity of CMP Relation '{cmpRelationName}' to '{args.Item.Name}' item. Field mapping ID: '{relatedEntityMappingItem.ID}'. Both fields must have their relationship type set if at least one of them is set to parent or child"),
+                                                this);
+                                            continue;
+                                        }
+
+                                        if (relationshipType == relatedEntityRelationshipType)
+                                        {
+                                            //skip - its the same field
+                                            continue;
+                                        }
+
+                                        var fieldTarget = relatedEntityFieldMapping[Sitecore.Connector.CMP.Constants.FieldMappingSitecoreFieldNameFieldId];
+                                        var str = relatedEntityItem[fieldTarget];
+                                        var alreadyRelated = false;
                                         var strArray = Array.Empty<string>();
                                         if (!string.IsNullOrEmpty(str))
                                         {
                                             strArray = str.Split("|".ToCharArray());
-                                            flag2 = strArray.Any(x => string.Equals(x, args.Item.ID.ToString(), StringComparison.Ordinal));
+                                            alreadyRelated = strArray.Any(x => string.Equals(x, args.Item.ID.ToString(), StringComparison.Ordinal));
                                         }
-                                        if (!flag2)
+                                        if (!alreadyRelated)
                                         {
                                             var list = strArray.ToList();
                                             list.Add(args.Item.ID.ToString());
                                             relatedEntityItem.Editing.BeginEdit();
-
-                                            var relatedEntityReverseRelationshipFieldName =
-                                                GetRelatedEntityReverseRelationshipFieldName(fieldName2,
-                                                    cmpRelationName, entityMappingConfigItem);
-                                            relatedEntityItem[relatedEntityReverseRelationshipFieldName] = strArray.Length != 0 ? string.Join("|", list) : args.Item.ID.ToString();
+                                            
+                                            relatedEntityItem[fieldTarget] = strArray.Length != 0 ? string.Join("|", list) : args.Item.ID.ToString();
                                                 
                                             relatedEntityItem.Editing.EndEdit();
                                         }
@@ -188,27 +211,6 @@ namespace Foundation.ContentHubExtensions.Pipelines.cmp.importEntity
                 flag1 = true;
             }
             return !flag1;
-        }
-
-        private static string GetRelatedEntityReverseRelationshipFieldName(string relatedEntityFieldName, string cmpRelationName, Item entityMappingConfigItem)
-        {
-            var counterPartCmpRelationName = relatedEntityFieldName;
-
-            foreach (var counterPartBaseItem in
-                     entityMappingConfigItem.Children.Where(
-                         x =>
-                             x.TemplateID == Sitecore.Connector.CMP.Constants
-                                 .RelatedEntityMappingTemplateId &&
-                             string.Equals(
-                                 x[
-                                     Sitecore.Connector.CMP.Constants
-                                         .RelationFieldMappingCmpRelationFieldNameFieldId],
-                                 counterPartCmpRelationName, StringComparison.Ordinal)))
-            {
-                return counterPartBaseItem[Sitecore.Connector.CMP.Constants.FieldMappingSitecoreFieldNameFieldId];
-            }
-
-            return relatedEntityFieldName;
         }
     }
 }

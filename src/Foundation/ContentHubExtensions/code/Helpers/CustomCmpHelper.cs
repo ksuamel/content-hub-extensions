@@ -4,6 +4,7 @@ using Sitecore.Connector.CMP.Conversion;
 using Sitecore.Connector.CMP.Helpers;
 using Sitecore.Connector.CMP.Models;
 using Sitecore.Connector.CMP.Pipelines.ImportEntity;
+using Sitecore.Data;
 using Stylelabs.M.Framework.Essentials.LoadOptions;
 using Stylelabs.M.Sdk.Contracts.Base;
 using Stylelabs.M.Sdk.WebClient;
@@ -16,34 +17,35 @@ namespace Foundation.ContentHubExtensions.Helpers
         {
         }
 
-        public override List<CmpEntityModel> GetRelationEntities(ImportEntityPipelineArgs args, string cmpRelationName)
+        public List<CmpEntityModel> GetRelationEntities(ImportEntityPipelineArgs args, string cmpRelationName, ID relationshipTypeId)
         {
-            if (!cmpRelationName.EndsWith(Constants.ChildSuffix) && !cmpRelationName.EndsWith(Constants.ParentSuffix))
+            if (ID.IsNullOrEmpty(relationshipTypeId) || relationshipTypeId == Constants.RelationshipType.Default)
             {
-                return base.GetRelationEntities(args, cmpRelationName);
+                base.GetRelationEntities(args, cmpRelationName);
             }
 
-            var isChild = cmpRelationName.EndsWith(Constants.ChildSuffix);
-            var cleanRelationName = cmpRelationName.Replace(Constants.ChildSuffix, "").Replace(Constants.ParentSuffix, "");
+            var isChild = relationshipTypeId == Constants.RelationshipType.Child;
             var longList = (IList<long>)null;
-            var relation = args.Entity.GetRelation(cleanRelationName, new RelationRole?( isChild  ? RelationRole.Child : RelationRole.Parent));
+            var relation = args.Entity.GetRelation(cmpRelationName, isChild ? RelationRole.Child : RelationRole.Parent);
             if (relation != null)
                 longList = relation.GetIds();
             var relationEntities = new List<CmpEntityModel>();
 
-            if (longList != null)
+            if (longList == null)
             {
-                foreach (long entityId in (IEnumerable<long>)longList)
+                return relationEntities;
+            }
+
+            foreach (var entityId in longList)
+            {
+                var entity = this.GetEntity(entityId);
+                relationEntities.Add(new CmpEntityModel()
                 {
-                    IEntity entity = this.GetEntity(entityId);
-                    relationEntities.Add(new CmpEntityModel()
-                    {
-                        EntityId = entityId,
-                        EntityDefinition = this.GetEntityDefinitionType(entity),
-                        EntityIdentifier = entity.Identifier,
-                        Entity = entity
-                    });
-                }
+                    EntityId = entityId,
+                    EntityDefinition = this.GetEntityDefinitionType(entity),
+                    EntityIdentifier = entity.Identifier,
+                    Entity = entity
+                });
             }
             return relationEntities;
         }

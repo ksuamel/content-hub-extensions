@@ -1,0 +1,27 @@
+﻿---
+ID: "a00ca909-1ce3-42a1-b245-e5b93aa377a9"
+Parent: "9a36c42f-bab9-4d2a-b96c-5aad35e937f4"
+Template: "a87a00b1-e6db-45ab-8b54-636fec3b5523"
+Path: /sitecore/system/Modules/CMP/Settings/Relationship Options
+SharedFields:
+- ID: "1172f251-dad4-4efb-a329-0c63500e4f1e"
+  Hint: __Masters
+  Value: "{C34E8CB4-6261-4EB3-BCC9-9A2C9745C87B}"
+Languages:
+- Language: en
+  Versions:
+  - Version: 1
+    Fields:
+    - ID: "25bed78c-4957-4165-998a-ca1b52f67497"
+      Hint: __Created
+      Value: 20200422T114758Z
+    - ID: "8cdc337e-a112-42fb-bbb4-4143751e123f"
+      Hint: __Revision
+      Value: "55d95edf-f661-47ed-be4b-dd82eea0f8fb"
+    - ID: "badd9cf9-53e0-4d0c-bcc0-2d784c282f6a"
+      Hint: __Updated by
+      Value: |
+        sitecore\Admin
+    - ID: "d9cf14b1-fa16-4ba6-9288-e8a174d4d522"
+      Hint: __Updated
+      Value: 20230704T042610Z

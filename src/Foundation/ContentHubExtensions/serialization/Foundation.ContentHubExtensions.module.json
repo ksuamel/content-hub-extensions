@@ -8,9 +8,17 @@
 				"path": "/sitecore/templates/Foundation/ContentHubExtensions"
 			},
 			{
-				"name": "id providers root",
+				"name": "id providers",
 				"path": "/sitecore/system/Modules/CMP/Settings/Id Providers",
 				"scope": "SingleItem"
+			},
+			{
+				"name": "relationship options",
+				"path": "/sitecore/system/Modules/CMP/Settings/Relationship Options",
+			},
+			{
+				"name": "related entity mapping",
+				"path": "/sitecore/templates/CMP/Mapping Templates/Related Entity Mapping",
 			}
 		]
 	}
